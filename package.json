@@ -1,0 +1,54 @@
+{
+  "name": "syncmessage_2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "start": "env-cmd  -f ./config/keys.env electron .",
+    "test": "ELECTRON_RUN_AS_NODE=true ./node_modules/.bin/electron ./node_modules/.bin/jest",
+    "build": "electron-packager . syncMessage2",
+    "mac": "electron-builder -m",
+    "publish": "electron-builder build -m -p onTagOrDraft"
+  },
+  "build": {
+    "appId": "com.lucy.syncmessage",
+    "directories": {
+      "buildResources": "."
+    }
+  },
+  "mac": {
+    "publish": [
+      "github"
+    ],
+    "category": "public.app-category.productivity",
+    "target": "dmg"
+  },
+  "keywords": [],
+  "author": "kyle",
+  "license": "ISC",
+  "dependencies": {
+    "@google-cloud/error-reporting": "^1.1.1",
+    "applescript": "^1.0.0",
+    "better-sqlite3": "^5.4.0",
+    "electron-is-dev": "^1.1.0",
+    "electron-log": "^3.0.7",
+    "electron-unhandled": "^3.0.0",
+    "electron-updater": "^4.1.2",
+    "env-cmd": "^9.0.3",
+    "exif-parser": "^0.1.12",
+    "exif-reader": "^1.0.2",
+    "exifreader": "^2.8.2",
+    "get-exif": "^1.0.3",
+    "image-size": "^0.7.4",
+    "node-watch": "^0.6.3",
+    "request": "^2.88.0"
+  },
+  "devDependencies": {
+    "asar": "^2.0.1",
+    "electron": "^6.0.2",
+    "electron-builder": "^21.2.0",
+    "electron-package": "^0.1.0",
+    "firebase": "^6.3.0",
+    "jest": "^24.8.0"
+  }
+}

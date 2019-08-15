@@ -2,23 +2,27 @@
 <html>
 <head>
     
+    <!-- <link type="text/css" rel="stylesheet" href="css/materialize.css"  media="screen,projection"/> -->
+
+    <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
+
+    <link rel = "stylesheet" type = "text/css" href="../css/myStyles.css"/>
     <meta charset="utf-8">
     <title>Downloading Update</title>
+
 </head>
 <body>
-    <progress style = "width:100%" value="0" max="100">0%</progress> 
+    
+    <div style="text-align:center">
+        
+        <h4>Downloading Update</h4>
 
-    <script>
-    const {ipcRenderer} = require("electron");
+        <div class="loader2"></div>
 
-    $ = require("jquery");
 
-    setInterval(() => {
+    </div>
 
-        let progress = ipcRenderer.sendSync("download-progress-request");
+    
 
-        $("progress").val(progress);
-    })
-    </script>
 </body>
 </html>

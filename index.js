@@ -1,4 +1,4 @@
-console.log("hello")
+console.log("syncmessage started");
 
 const APP_VERSION = "2.0.0";
 

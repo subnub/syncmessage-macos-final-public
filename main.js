@@ -17,7 +17,10 @@ app.on("ready", () => {
   if (isDev) {return};
   setTimeout(updater.check, 2000);
 
+
 })
+
+
 
 
 

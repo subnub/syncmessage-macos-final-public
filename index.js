@@ -7,6 +7,7 @@ const sqlite = require("better-sqlite3");
 const fs = require("fs");
 const os = require("os");
 const unhandled = require('electron-unhandled');
+const {ipcRenderer} = require('electron');
 
 
 // Internal Modules
@@ -61,6 +62,9 @@ let lastPropertieRefreshSaved = 0;
 const {ErrorReporting} = require('@google-cloud/error-reporting');
 
 let signedIn = false;
+
+let logginMode = true;
+let resetPassword = false;
 
 // Instantiates a client
 const errors = new ErrorReporting({
@@ -284,6 +288,28 @@ const signIn = async(email, password) => {
     })
 }
 
+const createAccount = async(email, password) => {
+
+    signedIn = true;
+
+    return new Promise((resolve, reject) => {
+
+        auth.createUserWithEmailAndPassword(email, password).then((result) => {
+
+            user = auth.currentUser;
+            userID = user.uid;
+            user.sendEmailVerification();
+            console.log("created account")
+            resolve();
+        }).catch((e) => {
+
+            signedIn = false;
+            console.log(e);
+            reject(e);
+        })
+    })
+}
+
 const setCustomization = () => {
 
     document.body.style.backgroundColor = "#008577";
@@ -293,6 +319,79 @@ const setCustomization = () => {
 const setViewListeners = () => {
 
     document.getElementById("materialButton").addEventListener("click", signinButtonEvent);
+    document.getElementById("createAcctText").addEventListener("click", createAccountEvent);
+    document.getElementById("resetPasswordText").addEventListener("click", resetPasswordEvent);
+}
+
+const resetPasswordEvent = () => {
+
+    resetPassword = !resetPassword;
+
+    logginMode = true;
+
+    if (resetPassword) {
+
+        document.getElementById("materialButton").innerHTML = "RESET"
+        document.getElementById("createAcctText").style.visibility = "hidden"
+        document.getElementById("resetPasswordText").innerHTML = "Back To Login"
+        document.getElementById("passwordDiv").style.visibility = "hidden"
+
+    } else {
+
+        document.getElementById("createAcctText").style.visibility = "visible"
+        document.getElementById("resetPasswordText").innerHTML = "Trouble Login In? Reset Password"
+        document.getElementById("passwordDiv").style.visibility = "visible"
+        document.getElementById("materialButton").innerHTML = "LOGIN"
+        document.getElementById("createAcctText").innerHTML = "No Account Yet? Create Account";
+    
+    }
+
+}
+
+const sendEmailVerification = () => {
+
+    console.log("email verification");
+    user.sendEmailVerification();
+    alert("Sent Email Verification");
+
+}
+
+const createAccountEvent = async() => {
+
+    console.log("create account");
+
+    logginMode = !logginMode;
+
+    if (logginMode === true) {
+
+        document.getElementById("materialButton").innerHTML = "LOGIN"
+        document.getElementById("createAcctText").innerHTML = "No Account Yet? Create Account";
+
+    } else {
+
+        document.getElementById("materialButton").innerHTML = "CREATE"
+        document.getElementById("createAcctText").innerHTML = "Already Have An Account? Sign In"
+    }
+
+}
+
+const resetPasswordFunction = async(email) => {
+
+    signedIn = true;
+
+    return new Promise((resolve, reject) => {
+
+        auth.sendPasswordResetEmail(email).then((result) => {
+
+            console.log("password reset sent");
+            resolve();
+
+        }).catch((e) => {
+
+            console.log(e);
+            reject(e);
+        })
+    })
 }
 
 const signinButtonEvent = async() => { 
@@ -306,7 +405,7 @@ const signinButtonEvent = async() => {
     let usernameText = usernameInput.value;
     let passwordText = passwordInput.value;
 
-    if (signedIn|| usernameText === undefined || usernameText.length === 0 || passwordText === undefined || passwordText.length === 0) {
+    if ((signedIn|| usernameText === undefined || usernameText.length === 0 || passwordText === undefined || passwordText.length === 0) && !resetPassword) {
 
         loadingSpinner.style.visibility = "hidden";
         return;
@@ -314,26 +413,84 @@ const signinButtonEvent = async() => {
     
     console.log("login button clicked");
 
-    try {
+    if (resetPassword) {
 
-        await signIn(usernameText, passwordText);
-        console.log("signed in");
+        //console.log("reset password");
+
+        try {
+            
+            await resetPasswordFunction(usernameText);
+            alert("Password Reset Sent");
+
+        } catch (e) {
+
+            console.log(e);
+            alert("Could Not Reset Password");
+        }
+
         loadingSpinner.style.visibility = "hidden";
-        start();
+        signedIn = false;
 
-    } catch (e) {
+    } else if (logginMode) {
 
-        loadingSpinner.style.visibility = "hidden";
+        try {
 
-        alert("Login Error");
+            await signIn(usernameText, passwordText);
+            
+            if (!user.emailVerified) {
+    
+                alert("Please Verify Email Address First")
+                loadingSpinner.style.visibility = "hidden";
+                document.getElementById("resendEmail").style.visibility = "visible";
+                document.getElementById("resendEmail").addEventListener("click", sendEmailVerification);
+                signedIn = false;
+                
+                return;
+            }
+    
+            loadingSpinner.style.visibility = "hidden";
+            start();
+    
+        } catch (e) {
+    
+            loadingSpinner.style.visibility = "hidden";
+    
+            alert("Login Error");
+    
+    
+        }
 
+    } else {
 
+        try {
+
+            await createAccount(usernameText, passwordText);
+            loadingSpinner.style.visibility = "hidden";
+            alert("Email Verification Sent");
+            signedIn = false;
+            createAccountEvent();
+
+        } catch (e) {
+
+            loadingSpinner.style.visibility = "hidden";
+            alert("Create Account Error");
+            signedIn = false;
+
+        }
     }
+
+    
     
 
 }
 
 const start = async() => {
+
+
+    document.getElementById("mainDiv").style.display = "none";
+    document.getElementById("messageSyncDiv").style.display = "block";
+    document.body.style.backgroundColor = "#FFFFFF";
+    ipcRenderer.send('resize-sync');
 
     await writeAllDatabaseFiles();
     iMessageDB = require('better-sqlite3')(`/Users/${os_username}/sync_message_images/chat.db`);

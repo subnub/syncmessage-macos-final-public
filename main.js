@@ -1,4 +1,4 @@
-const { app, BrowserWindow } = require('electron')
+const { app, BrowserWindow, ipcMain } = require('electron')
 const isDev = require('electron-is-dev');
 
 // Keep a global reference of the window object, if you don't, the window will
@@ -20,6 +20,9 @@ app.on("ready", () => {
 
 })
 
+ipcMain.on('resize-sync', (event, arg) => {
+  win.setSize(350,500)
+})
 
 
 
@@ -28,7 +31,7 @@ function createWindow () {
   // Create the browser window.
   win = new BrowserWindow({
     width: 600,
-    height: 600,
+    height: 620,
     webPreferences: {
       nodeIntegration: true
     }

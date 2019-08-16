@@ -33,6 +33,14 @@
     font-size: 10px
 }
 
+#resendEmail {
+
+    text-align: center;
+    color: rgb(185, 185, 185);
+    font-size: 10px;
+    visibility: hidden;
+}
+
 #mainLoadingSpinner {
 
     left:45%;

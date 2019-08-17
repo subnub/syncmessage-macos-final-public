@@ -156,8 +156,14 @@ const createChatAndMessages = async(chats, limitFromFirstKey=false) => {
         //     messageLength = Object.keys(messages).length;
             
         // }
+
+        let safeLastROWID = 0;
         
-        chat.firstMessageROWID = messages[Object.keys(messages)[0]].ROWID;
+        try {
+            safeLastROWID = messages[Object.keys(messages)[0]].ROWID;
+        } catch (e) {}
+
+        chat.firstMessageROWID = safeLastROWID;
         tempChatGuidAndMessage[chatGUID] = messages;
         tempChatGuidAndChat[chatGUID] = chat;
 

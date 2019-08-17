@@ -489,7 +489,7 @@ const getMessagesByChatROWID = async(ROWID, userID, sentMessages, iMessageDB, sa
 
     //console.log("preparing_chat_message_join");
     
-    if (saveKey === undefined || saveKey === null) {
+    if (saveKey === undefined || saveKey === null || saveKey === 0) {
 
         chatJoinDB = iMessageDB.prepare(`SELECT * FROM chat_message_join WHERE chat_id=${ROWID} ORDER BY message_id DESC LIMIT 50`);
         readChatJoinDB = chatJoinDB.all();

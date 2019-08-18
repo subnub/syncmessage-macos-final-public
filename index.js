@@ -8,12 +8,18 @@ const fs = require("fs");
 const os = require("os");
 const unhandled = require('electron-unhandled');
 const {ipcRenderer} = require('electron');
+const storageJSON = require("electron-json-storage");
+const shell = require('electron').shell;
+const remote = require('electron').remote;
+
+
 
 
 // Internal Modules
 const {getChats,getMessagesByChatROWID,getLastMessageROWID,getMessagesNeedingUpdate, getNewMessages, findMessageByGuid, getLastMessageByChatROWID, findNewMessage, getLastRecordProperties} = require("./db_functions/db_functions");
 const {sleep,limitMessages, dateConverter, readFile, writeFile, writeAllDatabaseFiles} = require("./utils/utils")
 const {sendTextMessage, sendImageMessage, sendTextMessgeGroupChat, sendImageMessageGroupChat, sendNewTextMessage, sendNewTextMessageGroupchat} = require("./imessage_functions/imessage");
+const {sendToAccessibility, sendToFullDisk, checkSendPermission} = require("./applescript_functions/applescript_functions")
 
 const sendMessageList = [];
 
@@ -66,6 +72,11 @@ let signedIn = false;
 let logginMode = true;
 let resetPassword = false;
 
+let setupPOS = 0;
+
+
+let syncStarted = false;
+
 // Instantiates a client
 const errors = new ErrorReporting({
   projectId: 'syncmessage-e01f6',
@@ -113,7 +124,7 @@ unhandled({logger:error => {
 //errors.report("test");
 
 
-const createChatAndMessages = async(chats, limitFromFirstKey=false) => {
+const createChatAndMessages = async(chats, limitFromFirstKey=false, showSyncStatus=false) => {
     
     //nothere.length
     //throw new Error("test2")
@@ -168,6 +179,12 @@ const createChatAndMessages = async(chats, limitFromFirstKey=false) => {
         tempChatGuidAndChat[chatGUID] = chat;
 
         counter++;
+
+        if (showSyncStatus) {
+
+            document.getElementById("syncStatus").innerHTML = `Syncing (${i + 1},${chats.length})`;
+
+        }
 
     }
 
@@ -243,7 +260,7 @@ const getFirstChatsAndMessage = async(startListening = false) => {
     savedFirstChats = allChats;
 
     console.log("createChat")
-    const chatAndMessage = await createChatAndMessages(allChats);
+    const chatAndMessage = await createChatAndMessages(allChats, false, true);
     console.log("createdChat")
 
     chatGuidAndChat = chatAndMessage.tempChatGuidAndChat;
@@ -327,6 +344,40 @@ const setViewListeners = () => {
     document.getElementById("materialButton").addEventListener("click", signinButtonEvent);
     document.getElementById("createAcctText").addEventListener("click", createAccountEvent);
     document.getElementById("resetPasswordText").addEventListener("click", resetPasswordEvent);
+    document.getElementById("settingsIcon").addEventListener("click", settingsButtonEvent);
+}
+
+const settingsButtonEvent = () => {
+
+  //  console.log("clicked");
+    document.getElementById('messageSyncDiv').style.display = "none";
+    document.getElementById("settingsDiv").style.display = "block";
+    document.getElementById("settingsBackArrow").addEventListener("click", backToSync)
+
+    document.getElementById("loggoutTextWrapper").addEventListener("click", logoutEvent);
+
+    document.getElementById("backToSetupTextWrapper").addEventListener("click", backToSetup);
+}
+
+const backToSetup = () => {
+
+    document.getElementById("settingsDiv").style.display = "none";
+    startSetup();
+}
+
+const logoutEvent = () => {
+
+    remote.app.relaunch();
+    remote.app.exit(0);
+}
+
+const backToSync = () => {
+
+    console.log("clicked");
+    ipcRenderer.send('resize-sync');
+    document.getElementById("settingsDiv").style.display = "none";
+    document.getElementById("messageSyncDiv").style.display = "block";
+    document.body.style.backgroundColor = "#FFFFFF";
 }
 
 const resetPasswordEvent = () => {
@@ -490,14 +541,185 @@ const signinButtonEvent = async() => {
 
 }
 
-const start = async() => {
+const checkSetupCompleted = async() => {
+
+    return new Promise((resolve, reject) => {
+
+        storageJSON.get('tos_accepted2', function(error, data) {
+
+            console.log("data", data);
+            if (data.accepted && data.accepted === "accepted") {
+
+                resolve(true);
+
+            } else {
+
+                resolve(false);
+            }
+            
+        })
+    
+
+    })
 
 
+}
+
+const completeSetup = async() => {
+
+    return new Promise((resolve, reject) => {
+
+        storageJSON.set('tos_accepted2', { accepted: "accepted" }, function(error) {
+            if (error) {
+
+                console.log(error);
+                reject(error);
+            
+            } else {
+
+                resolve();
+            } 
+       });
+    })    
+}
+
+const startSetup = async() => {
+
+    setupPOS = 0;
+
+    const newerMacOSVersion = parseInt(os.release().split(".")[0]) >= 18;
+
+    console.log("setup_newer", newerMacOSVersion);
+    
+    ipcRenderer.send('resize-setup');
     document.getElementById("mainDiv").style.display = "none";
-    document.getElementById("messageSyncDiv").style.display = "block";
+    document.getElementById("setupDiv").style.display = "block";
     document.body.style.backgroundColor = "#FFFFFF";
-    ipcRenderer.send('resize-sync');
 
+    document.getElementById("setupText").innerHTML = 'If a permission prompt pops up please accept the prompt, syncMessage will then take you into the "Accessibility" Settings, here click the "+" button, a folder will appear and select the syncMessage Application, again make sure syncMessage is under the "Applications" folder. This is needed in order for syncMessage to send messages.'
+
+    document.getElementById("setupImage").src = "./media/thirdStep.gif";
+
+    await sendToAccessibility();
+
+    document.getElementById("setupArrow").addEventListener("click", nextSetupPage);
+
+    
+
+    document.getElementById("skipButton").addEventListener("click", startTOS)
+
+    document.getElementById("havingTroubleTextWrapper").addEventListener("click", havingTroubleLaunch)
+}
+
+const havingTroubleLaunch = () => {
+
+    shell.openExternal("http://syncmessage-android.com/how-to")
+}
+
+
+const nextSetupPage = async() => {
+
+    setupPOS++;
+
+    const newerMacOSVersion = parseInt(os.release().split(".")[0]) >= 18;
+
+    if (setupPOS === 1 && newerMacOSVersion) {
+
+        document.getElementById("setupText").innerHTML = `Next, syncMessage will take you to the full-disk option, again press the "+" button, and add the syncMessage Application. This is needed so syncMessage has access to your messages file. MacOS might warn you that it needs to quit the application, ignore this for now you can restart syncMessage later.`
+
+        document.getElementById("setupImage").src = "./media/forthStep.gif";
+
+        await sendToFullDisk();
+
+    } else if (setupPOS === 2 && newerMacOSVersion) {
+
+        document.getElementById("setupText").innerHTML = `Next, syncMessage will prompt you for permission to send messages, if this does not popup syncMessage already has message permissions, just press next.`
+
+        document.getElementById("setupImage").src = "./media/fifthStep.gif";
+
+        console.log(await checkSendPermission());
+
+    } else if (setupPOS === 3 && newerMacOSVersion) {
+
+        document.getElementById("setupText").innerHTML = `Lastely close and reopen syncMessage. (Optional) You should change your power settings to make sure your mac never goes to sleep, but this is not required`
+
+        document.getElementById("setupImage").src = "./media/eigthstep.gif";
+
+    } else if (setupPOS === 4 && newerMacOSVersion) {
+
+        startTOS();
+
+    } else if (setupPOS === 1 && !newerMacOSVersion) {
+
+        document.getElementById("setupText").innerHTML = `Next, syncMessage will prompt you for permission to send messages, if this does not popup syncMessage already has message permissions, just press next.`
+
+        document.getElementById("setupImage").src = "./media/fifthStep.gif";
+
+        console.log(await checkSendPermission());
+
+
+    } else if (setupPOS === 2 && !newerMacOSVersion) {
+
+        document.getElementById("setupText").innerHTML = `Lastely close and reopen syncMessage. (Optional) You should change your power settings to make sure your mac never goes to sleep, but this is not required`
+
+        document.getElementById("setupImage").src = "./media/eigthstep.gif";
+        
+    } else if (setupPOS === 3 && !newerMacOSVersion) {
+
+        startTOS();        
+    }
+
+    console.log("next_setup", setupPOS);
+
+}
+
+const startTOS = async() => {
+
+    document.getElementById("setupDiv").style.display = "none";
+    document.getElementById("TOSdiv").style.display = "block";
+    document.getElementById("acceptTOSCheckBox").addEventListener("click", acceptTOSCheckBoxEvent);
+
+    document.getElementById("acceptTOSButton").addEventListener("click", acceptTOS);
+}
+
+const acceptTOSCheckBoxEvent = () => {
+
+    if(document.getElementById("acceptTOSCheckBox").checked) {
+
+        document.getElementById("acceptTOSButtonWrapper").style.opacity = 1;
+
+    } else {
+
+        document.getElementById("acceptTOSButtonWrapper").style.opacity = 0.5;
+    }
+}
+
+const acceptTOS = async() => {
+
+    if (document.getElementById("acceptTOSCheckBox").checked) {
+
+        await completeSetup();
+        document.getElementById("TOSdiv").style.display = "none";
+        document.getElementById("messageSyncDiv").style.display = "block";
+        document.body.style.backgroundColor = "#FFFFFF";
+        ipcRenderer.send('resize-sync');
+
+    } else {
+
+        alert("Please Accept The Agreement")
+    }
+}
+
+const syncButtonEvent = async() => {
+
+    if (syncStarted) {
+
+        return;
+    }
+
+    syncStarted = true;
+
+    document.getElementById("syncStatus").innerHTML = "Starting Sync";
     await writeAllDatabaseFiles();
     iMessageDB = require('better-sqlite3')(`/Users/${os_username}/sync_message_images/chat.db`);
 
@@ -509,6 +731,53 @@ const start = async() => {
     newMessageTest();
 
 }
+
+const start = async() => {
+
+    const setupCheck = await checkSetupCompleted();
+    
+    if (!setupCheck) {
+
+        startSetup();
+        return;
+    }
+    document.getElementById("mainDiv").style.display = "none";
+    document.getElementById("messageSyncDiv").style.display = "block";
+    document.body.style.backgroundColor = "#FFFFFF";
+    ipcRenderer.send('resize-sync');
+
+    const permissionCheckBool = await permissionCheck();
+
+    if (!permissionCheckBool) {
+        
+        document.getElementById("syncErrorStatus").style.display = "block";
+        document.getElementById("syncStatus").innerHTML = "Permission Error";
+        return;
+    }
+    
+
+    document.getElementById("syncButtonWrapper").addEventListener("click",syncButtonEvent);
+
+}
+
+const permissionCheck = async() => {
+
+    const checkSendPermissionBool = await checkSendPermission();
+
+    if (!checkSendPermissionBool) {return false;}
+
+    try {
+
+        await writeAllDatabaseFiles();
+        return true;
+
+    } catch (e) {
+
+        return false; 
+    }
+    
+}
+
 const main = async() => {
 
 
@@ -747,7 +1016,7 @@ const addUploadTime = async() => {
         resolve();
     })
 }
-
+//startSetup();
 main();
 
 
@@ -888,6 +1157,8 @@ const newMessageTest = async() => {
             continue;
         }
 
+        document.getElementById("syncStatus").innerHTML = `Syncing`
+
         lastPropertieRefreshSaved = lastPropertieRefresh;
 
         await writeAllDatabaseFiles();
@@ -970,6 +1241,7 @@ const newMessageTest = async() => {
         
 
         mainRefreshErrorCounter = 0;
+        document.getElementById("syncStatus").innerHTML = `Synced`
         console.log("contining_mesesages");
 
     }
@@ -1153,8 +1425,10 @@ const uploadNewMessages = async(messagesNeedingUploadDict) => {
     console.log("messges needing upload", messagesNeedingUploadDict)
     return new Promise((resolve, reject) => {
 
-
+        let counter = 0;
         messagesNeedingUploadDictKeys.forEach((messageKey) => {
+
+            counter++;
 
             const message = messagesNeedingUploadDict[messageKey];
 
@@ -1213,7 +1487,10 @@ const compareMessageDicts = async(oldMessageDict, newMessageDict) => {
 
 const uploadTest = async() => {
 
+    document.getElementById("syncStatus").innerHTML = `Uploading`
     await uploadFirebase(chatGuidAndChat, chatGuidAndMessage, userID);
+    document.getElementById("syncStatus").innerHTML = `Synced`;
     console.log("uploaded");
 }
+
 

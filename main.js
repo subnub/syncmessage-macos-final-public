@@ -24,6 +24,10 @@ ipcMain.on('resize-sync', (event, arg) => {
   win.setSize(350,500)
 })
 
+ipcMain.on('resize-setup', (event, arg) => {
+  win.setSize(600,620);
+})
+
 
 
 

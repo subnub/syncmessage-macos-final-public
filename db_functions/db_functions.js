@@ -666,6 +666,7 @@ const getNewMessages = (oldChatGuidAndMessage, newChatGuidAndMessage, chatGuidAn
             }   
             
             count++;
+
         })
     })
 

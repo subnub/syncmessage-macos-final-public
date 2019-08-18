@@ -94,7 +94,7 @@
 
 #setupImage {
 
-    width: 85%;
+    width: 60%;
     border-radius: 15px;
 }
 
@@ -110,6 +110,11 @@
     padding-left: 5%;
     padding-right: 5%;
     padding-bottom: 5%;
+}
+
+#havingTroubleTextWrapper {
+
+    text-align: center;
 }
 
 #skipWrapper {

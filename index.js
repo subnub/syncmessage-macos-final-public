@@ -1,4 +1,4 @@
-console.log("syncmessage started 1.0.9");
+console.log("syncmessage started 1.1.0");
 
 const APP_VERSION = "2.0.0";
 
@@ -11,6 +11,8 @@ const {ipcRenderer} = require('electron');
 const storageJSON = require("electron-json-storage");
 const shell = require('electron').shell;
 const remote = require('electron').remote;
+
+console.log(storageJSON.getDefaultDataPath())
 
 
 // Internal Modules
@@ -650,6 +652,9 @@ const acceptTOS = async() => {
         document.getElementById("messageSyncDiv").style.display = "block";
         document.body.style.backgroundColor = "#FFFFFF";
         ipcRenderer.send('resize-sync');
+        document.getElementById("syncButtonWrapper").addEventListener("click",syncButtonEvent);
+
+        //syncStarted = false;
 
     } else {
 

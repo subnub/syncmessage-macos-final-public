@@ -11,21 +11,6 @@ exports.check = () => {
     console.log("checking for updaters");
     autoUpdater.checkForUpdates();
 
-    // let progressWin = new BrowserWindow({
-    //     width: 350,
-    //     height: 35, 
-    //     useContentSize: true, 
-    //     autoHideMenuBar: true,
-    //     maximizable: false,
-    //     fullscreen: false,
-    //     fullscreenable: false, 
-    //     resizable: false,
-    // })
-    
-    // progressWin.loadURL(`file://${__dirname}/renderer/progress.html`)
-    
-
-
     autoUpdater.on("update-available", () => {
 
         let downloadProgress = 0;
@@ -66,13 +51,6 @@ exports.check = () => {
 
                 e.returnValue = downloadProgress;
             })
-
-            // Track Process
-            // autoUpdater.on("download-progress", (d) => {
-
-            //     downloadProgress = d.percent;
-            //     autoUpdater.logger.info("percentage " + d);
-            // })
 
             autoUpdater.on('download-progress', (progressObj) => {
                 

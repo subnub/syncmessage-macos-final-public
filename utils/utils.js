@@ -36,9 +36,7 @@ const limitMessages = async(messageDict, limitFromFirstKey, startROWID) => {
 
     return new Promise((resolve, reject) => {
 
-
         const messageKeys = Object.keys(messageDict);
-
 
         let limitedDict = {}
 
@@ -65,8 +63,7 @@ const limitMessages = async(messageDict, limitFromFirstKey, startROWID) => {
         } else {
 
             messagesKeysLimited = messageKeys.slice(messageKeys.length - 50, messageKeys.length);
-            //let limitedDict = {}
-
+           
             messagesKeysLimited.forEach((key) => {
 
             limitedDict[key] = messageDict[key];
@@ -75,8 +72,7 @@ const limitMessages = async(messageDict, limitFromFirstKey, startROWID) => {
 
 
         }
-        // })
-
+     
         resolve(limitedDict);
 
     })
@@ -88,8 +84,7 @@ const readFile = async(picture_file_path) => {
 
       fs.readFile(picture_file_path, function read(err, data) {
       if (err) {
-          //hrow err;
-          //throw new Error(err)
+          
           reject(err);
       } else {
 
@@ -99,8 +94,6 @@ const readFile = async(picture_file_path) => {
 
 
     })
-
-     
 
 }
 
@@ -120,7 +113,6 @@ const writeFile = async(data, name) => {
 }
 
 const dateConverter = (date) => {
-
 
     try {
 
@@ -142,7 +134,6 @@ const dateConverter = (date) => {
 
         return dateVar.getTime();
     }
-
     
 }
 
@@ -173,20 +164,6 @@ const fixiMessageMessage = (message) => {
 
 const searchForSavedPictureSize = (messageROWID) => {
 
-    // const sizeKeys = Object.keys(skipFileSize);
-
-    // let foundSize;
-
-    // for(let i = 0; i < sizeKeys.length; i++) {
-
-    //     if(sizeKeys[i] === messageROWID) {
-
-    //         return skipFileSize[sizeKeys[i]];
-    //     }
-    // }
-
-    // return undefined;
-
     for(let i = 0; i < skipFileSize.length; i++) {
 
         const currentSkip = skipFileSize[i];
@@ -205,32 +182,21 @@ const getPictureSizes = async(filePathList, messageROWID) => {
     const savedSize = searchForSavedPictureSize(messageROWID);
     
     if(savedSize != undefined) {
-
-        
-        //console.log("saved_size");
         return savedSize;
-        //return;
     }
 
     let sizeList = [];
 
-    
     for(let i = 0; i < filePathList.length; i++) {
 
-        //let currentDimensions = {};
         const currentFilePath = filePathList[i];
         try {
-
-            //console.log("file_path", currentFilePath);
-            //const fileContent = await readFile(currentFilePath);
-
 
             var dimensions = sizeOf(currentFilePath);
             
             let X = dimensions.width;
             let Y = dimensions.height;
-            //console.log(dimensions);
-            
+           
             if (dimensions.orientation != undefined || dimensions.orientation != null) {
 
                 const orientation = dimensions.orientation;
@@ -254,28 +220,17 @@ const getPictureSizes = async(filePathList, messageROWID) => {
                 }
             }
             
-            //currentDimensions["X"] = X;
-            //currentDimensions["Y"] = Y;
 
             const tempString = X + "x" + Y;
 
             sizeList.push(tempString);
 
-            //skipFileSize[messageROWID] = currentDimensions;
-           
-
-            //console.log("orientation", orientation);
-
         } catch(e) {
 
             console.log("error", e);
-            //currentDimensions["X"] = "Error";
-            //currentDimensions["Y"] = "Error";
             const tempString = "Error" + "x" + "Error";
 
             sizeList.push(tempString);
-
-            //sizeList.push(currentDimensions);
         }
         
 
@@ -288,33 +243,6 @@ const getPictureSizes = async(filePathList, messageROWID) => {
 }
 
 const getOrientation = (fileContent) => {
-
-    // console.log("starting to load file");
-    // exifReaderTags = ExifReader.load(content);
-    // console.log("file loaded");
-    // exifReaderOrien = exifReaderTags["Orientation"].value;
-    // return
-    // console.log("gotten_orien", exifReaderOrien);
-
-    // console.log("get orien");
-    // const exifData = getExif(fileContent);
-
-    // console.log(exifData);
-
-    // return
-    
-    // console.log("starting to read file")
-    // var metadata = exif(content);
-    // console.log("read");
-    // return
-
-    // return new Promise((resolve, reject) => {
-
-    //     console.log("starting to read file")
-    //     var metadata = exif_Reader(content);
-    //     console.log("read");
-    //     resolve(0);
-    // })
 
     console.log("starting to read");
     var parser = require("exif-parser").create(fileContent);
@@ -330,14 +258,6 @@ const getOrientation = (fileContent) => {
     return;
                
 }   
-
-// const executeCmd = () => {
-
-//     return new Promise((resolve, reject) => {
-
-
-//     })
-// }
 
 const writeAllDatabaseFiles = async() => {
 

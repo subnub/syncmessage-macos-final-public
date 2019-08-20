@@ -35,7 +35,6 @@ const getLastMessageROWID = (iMessageDB) => {
 
 const getChats = (iMessageDB) => {
 
-    //const iMessageDB = sqlite(iMessagePath);
     const chatDB = iMessageDB.prepare("SELECT * FROM chat");
     const readChatDB = chatDB.all();
 
@@ -72,13 +71,10 @@ const getChats = (iMessageDB) => {
             continue;
         }
         
-
         const lastMessageText = lastMessage.text;
         const lastMessageDate = lastMessage.date;
         
         const lastMessageDateConverted = dateConverter(lastMessageDate);
-
-        //console.log("last_message", lastMessageDateConverted);
 
         newChat.guid = guid;
         newChat.ROWID = ROWID;
@@ -89,9 +85,6 @@ const getChats = (iMessageDB) => {
         newChat.last_message_date_converted = lastMessageDateConverted;
         newChat.chat_identifier = chatIdentifier;
         
-        
-
-
         chats.push(newChat);
     }
 
@@ -140,8 +133,6 @@ const getLastRecordProperties = (iMessageDB) => {
     const propDB = iMessageDB.prepare("SELECT * FROM _SqliteDatabaseProperties");
     const readPropDB = propDB.all();
 
-    //console.log("read_prop", readPropDB[readPropDB.length - 1]["value"]);
-
     return readPropDB[readPropDB.length - 1]["value"];
 }
 
@@ -157,18 +148,7 @@ const getLastMessageByChatROWID = (ROWID) => {
 
     const lastMessage = lastMessageDB.all()[0];
 
-
     return lastMessage;
-
-    // for(let i = 0; i < readChatJoinDB.length; i++) {
-
-    //     const chat_join = readChatJoinDB[i];
-
-    //     const messageDB = iMessageDB.prepare(`SELECT * FROM message WHERE ROWID=${chat_join.message_id}`)
-    //     const readMessageDB = messageDB.all();
-    // }
-
-
 }
 
 const getChatHandleJoin = (ROWID) => {
@@ -211,13 +191,11 @@ const getChatUsers = (chatHandleIDs) => {
 
 const getPicturePathAndName = (ROWID, iMessageDB) => {
 
-    //const iMessageDB = sqlite(iMessagePath); 
     const attachmentJoinDB = iMessageDB.prepare(`SELECT * FROM message_attachment_join WHERE message_id=${ROWID}`)
     const readAttachmentJoinDB = attachmentJoinDB.all();
 
     const totalFilenames = [];
     const totalFilePaths = [];
-    //const attachmentID = readAttachmentJoinDB[0].attachment_id;
 
     readAttachmentJoinDB.forEach((attachmentRow) => {
 
@@ -242,8 +220,6 @@ const getPicturePathAndName = (ROWID, iMessageDB) => {
 
                 filenameAddRowID = fileNameSplit;
             }
-            
-            // We do this just incase images have the same name.
              
             const filename = filenameAddRowID;
 
@@ -264,7 +240,6 @@ const uploadMedia = async(totalFilenames, totalFilePaths, userID) => {
 
     const totalURLs = [];
 
-    
     for(let i = 0; i < totalFilePaths.length; i++) {
 
         let path = totalFilePaths[i];
@@ -275,9 +250,7 @@ const uploadMedia = async(totalFilenames, totalFilePaths, userID) => {
 
             if (totalFilePaths[totalURLs.length].includes("/Messages/StickerCache") && !totalFilenames[totalURLs.length].includes(".gif")) {
 
-                //console.log("fixing_sticker_message");
                 const newPath = await fixStickerMessage(totalFilePaths[totalURLs.length], totalFilenames[totalURLs.length]);
-                //console.log("fixed_path", newPath);
                 path = newPath;
 
             }
@@ -288,15 +261,12 @@ const uploadMedia = async(totalFilenames, totalFilePaths, userID) => {
 
             } else {
 
-                //console.log("upload_message read_file");
                 fileContent = await readFile(path);
-                //console.log("upload_mesesage upload file");
+              
                 const url = await uploadFile(totalFilenames[totalURLs.length], fileContent, userID)
                 const currentFileName = totalFilenames[i];
 
                 totalURLs.push(currentFileName);
-                //console.log("file", fileContent);
-                //console.log("url", url);
             }
 
             
@@ -310,77 +280,6 @@ const uploadMedia = async(totalFilenames, totalFilePaths, userID) => {
     }
 
     return totalURLs;
-
-    // return new Promise((resolve, reject) => {
-
-    //     const totalURLs = [];
-
-    
-    //     for(let i = i; i < totalFilePaths.length; i++) {
-
-    //         let fileContent;
-
-    //         try {
-
-    //             if (totalFilenames[totalURLs.length].includes("pluginPayloadAttachment")) {
-
-    //                 totalURLs.push("error");
-
-    //             } else {
-
-    //                 fileContent = await readFile(path);
-    //                 const url = await uploadFile(totalFilenames[totalURLs.length], fileContent)
-                    
-    //                 totalURLs.push(url);
-    //                 console.log("file", fileContent);
-    //                 console.log("url", url);
-    //             }
-
-                
-
-    //         } catch (e) {
-
-    //             totalURLs.push("error");
-    //             console.log("file_error", e);
-    //         }
-
-    //     }
-
-    //     resolve(totalURLs);
-
-    //     // totalFilePaths.forEach(async(path) => {
-
-    //     //     let fileContent;
-
-    //     //     try {
-
-    //     //         if (totalFilenames[totalURLs.length].includes("pluginPayloadAttachment")) {
-
-    //     //             totalURLs.push("error");
-
-    //     //         } else {
-
-    //     //             fileContent = await readFile(path);
-    //     //             const url = await uploadFile(totalFilenames[totalURLs.length], fileContent)
-                    
-    //     //             totalURLs.push(url);
-    //     //             console.log("file", fileContent);
-    //     //             console.log("url", url);
-    //     //         }
-
-                
-
-    //     //     } catch (e) {
-
-    //     //         totalURLs.push("error");
-    //     //         console.log("file_error", e);
-    //     //     }
-    //     // })
-
-        
-
-    // })
-
 
 }
 
@@ -397,12 +296,7 @@ const findMessageByGuid = ((guid, messages) => {
         const messageROWID = currentMessage.ROWID;
         const messageGUID = currentMessage.guid;
 
-        //console.log("searching", messageGUID);
-        //console.log("seaching_for", guidFixed);
-
         if(messageGUID === guidFixed) {
-
-            //console.log("found", messageROWID);
 
             return messageROWID;
         }
@@ -414,17 +308,13 @@ const findMessageByGuid = ((guid, messages) => {
 
 const updateMessageROWID = (ROWID, messages, data) => {
 
-    //console.log("searching for", ROWID);
-    //console.log(messages);
-
     const reactionList = messages[ROWID].reactions;                 
 
     if (reactionList) {
 
         messages[ROWID].reactions[data.toString()] = data;
-        //messages[ROWID].reactions.push(data);
+    
     } else {
-
 
         messages[ROWID].reactions = {};
         messages[ROWID].reactions[data.toString()] = data;
@@ -440,7 +330,6 @@ const getUsernameByHandleID = (handleID, iMessageDB) => {
         return "Me";
     }
 
-    //const iMessageDB = sqlite(iMessagePath); 
     const handles = iMessageDB.prepare(`SELECT * FROM handle WHERE ROWID=${handleID}`)
     const readHandles = handles.all();
 
@@ -452,20 +341,12 @@ const getUsernameByHandleID = (handleID, iMessageDB) => {
 
 const checkForSentMessage = (message,sentMessages) => {
 
-    // {key: foundMessage.ROWID, pushID:foundMessage.pushID,message: foundMessage})
-
-    //console.log("checkForSentLen", sentMessages.length);
-
     for(let i = 0; i < sentMessages.length; i++) {
 
         const currentSentMessage = sentMessages[i];
-
-        //console.log("message", message.ROWID);
-        //console.log("current_message", currentSentMessage.key);
         
         if (currentSentMessage.key === message.ROWID) {
 
-            //console.log("match found");
             return currentSentMessage.pushID;
         }
     } 
@@ -480,14 +361,10 @@ const getMessagesByChatROWID = async(ROWID, userID, sentMessages, iMessageDB, sa
         return {};
     }
 
-    //const iMessageDB = sqlite(iMessagePath);
-
     let chatJoinDB;
     let readChatJoinDB;
 
     let reverse = false; 
-
-    //console.log("preparing_chat_message_join");
     
     if (saveKey === undefined || saveKey === null || saveKey === 0) {
 
@@ -500,7 +377,6 @@ const getMessagesByChatROWID = async(ROWID, userID, sentMessages, iMessageDB, sa
         chatJoinDB = iMessageDB.prepare(`SELECT * FROM chat_message_join WHERE chat_id=${ROWID} AND message_id > ${saveKey}`);
         readChatJoinDB = chatJoinDB.all();
         reverse = true;
-        //readChatJoinDB = readChatJoinDB.reverse();
 
     }
     
@@ -654,7 +530,6 @@ const getNewMessages = (oldChatGuidAndMessage, newChatGuidAndMessage, chatGuidAn
         const oldMessages = oldChatGuidAndMessage[userKey];
 
         const newMessageKeys = Object.keys(newMessages);
-        //const oldMessageKeys = Object.keys(oldMessages);
 
         let count = 0;
         newMessageKeys.forEach((messageKey) => {
@@ -731,8 +606,6 @@ const getMessagesNeedingUpdate = (oldChatGuidAndMessage, newChatGuidAndMessage, 
 
     })
 
-    //console.log(oldMessages);
-
     return {messagesNeedingUpdate, oldChatGuidAndMessage};
 
 }
@@ -755,11 +628,6 @@ const findNewMessage = async(lastMessage, chatROWID) => {
             console.log("newChat", newMessageOfChat);
             console.log("oldChat", lastMessage);
         }
-
-        // if (findLimit === count) {
-
-        //     throw new Error("Did not find message");
-        // }
 
         await sleep(4000);
         count++;

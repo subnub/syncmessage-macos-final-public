@@ -1,9 +1,3 @@
-// const chat = {
-//     ROWID: undefined, 
-//     guid: undefined,
-//     firstMessageROWID: undefined,
-// }
-
 const chat = function() {
 
     this.ROWID;

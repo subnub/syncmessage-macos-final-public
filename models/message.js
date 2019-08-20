@@ -1,19 +1,3 @@
-// const message = {
-
-//     ROWID: undefined,
-//     guid: undefined,
-//     text: undefined,
-//     date: undefined,
-//     is_from_me: undefined,
-//     is_sent: undefined,
-//     is_delivered: undefined,
-//     is_read: undefined,
-//     associate_message_guid: undefined,
-//     associate_message_type: undefined,
-//     filename: undefined,
-// }
-
-
 const message = function() {
 
     this.ROWID;

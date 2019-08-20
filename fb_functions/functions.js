@@ -42,7 +42,6 @@ const tryDownloadURL = ((filename, userID) => {
 
         storage.ref().child("Profiles").child(userID).child("attachments").child(filename).getDownloadURL().then((url) => {
 
-            //console.log("found url", url);
             uploadedFiles[filename] = url;
             resolve(url);
         }).catch((e) => {
@@ -87,7 +86,6 @@ const uploadFile = async(filename, content, userID) => {
 
         if (currentUploadedFileName === filename) {
 
-            //console.log("file already uploaded", filename);
             return(" ")
         }
         

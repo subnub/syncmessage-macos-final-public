@@ -356,6 +356,9 @@ const checkForSentMessage = (message,sentMessages) => {
 
 const getMessagesByChatROWID = async(ROWID, userID, sentMessages, iMessageDB, saveKey) => {
 
+    const newerMacOSVersion = parseInt(os.release().split(".")[0]) >= 18;
+
+
     if (ROWID === undefined || ROWID === null) {
 
         return {};
@@ -402,8 +405,16 @@ const getMessagesByChatROWID = async(ROWID, userID, sentMessages, iMessageDB, sa
         const messageIsSent = Boolean(readMessageDB[0].is_sent);
         const hasAttachment = readMessageDB[0].cache_has_attachments;
         const isFromMe = Boolean(readMessageDB[0].is_from_me);
-        const assosicatedExpressionGuid = readMessageDB[0].associated_message_guid;
-        const assosicatedExpressionType = readMessageDB[0].associated_message_type;
+
+        let assosicatedExpressionGuid = null;
+        let assosicatedExpressionType = null;
+
+        if (newerMacOSVersion) {
+
+            assosicatedExpressionGuid = readMessageDB[0].associated_message_guid;
+            assosicatedExpressionType = readMessageDB[0].associated_message_type;
+        }
+        
         const messageDate = readMessageDB[0].date;
         const serverDate = date_get.getTime();
         const handleID = readMessageDB[0].handle_id;

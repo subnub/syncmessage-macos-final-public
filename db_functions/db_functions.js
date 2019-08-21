@@ -358,7 +358,6 @@ const getMessagesByChatROWID = async(ROWID, userID, sentMessages, iMessageDB, sa
 
     const newerMacOSVersion = parseInt(os.release().split(".")[0]) >= 18;
 
-
     if (ROWID === undefined || ROWID === null) {
 
         return {};

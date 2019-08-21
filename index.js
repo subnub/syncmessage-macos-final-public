@@ -1,6 +1,6 @@
-console.log("syncmessage started 2.0.0");
+console.log("syncmessage started 2.0.1");
 
-const APP_VERSION = "2.0.0";
+const APP_VERSION = "2.0.1";
 
 // External Modules
 const sqlite = require("better-sqlite3");
@@ -96,9 +96,9 @@ const errors = new ErrorReporting({
 process.on('uncaughtException', (e) => {
     // Write the error to stderr.
 
-    console.error("uncaght", e);
+    console.error("uncaght", e.stack);
     // Report that same error the Stackdriver Error Service
-    errors.report(APP_VERSION + " " +  e);
+    errors.report(APP_VERSION + " " +  e.stack);
     //process.exit(1);
 })
 
@@ -106,14 +106,14 @@ process.on('unhandledRejection', (reason, promise) => {
     console.log('Unhandled Rejection at2:', reason.stack || reason)
     // Recommended: send the information to sentry.io
     // or whatever crash reporting service you use
-    errors.report(APP_VERSION + " " + reason);
+    errors.report(APP_VERSION + " " + reason.stack);
     //process.exit(1);
   })
 
 unhandled({logger:error => {
 
-    console.log("new_error", error)
-    errors.report(APP_VERSION + " " + error);
+    console.log("new_error", error.stack)
+    errors.report(APP_VERSION + " " + error.stack);
     //process.exit(1);
 }});
 

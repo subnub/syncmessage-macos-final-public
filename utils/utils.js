@@ -99,9 +99,11 @@ const readFile = async(picture_file_path) => {
 
 const writeFile = async(data, name) => {
 
+    await make_dir(`/Users/${os_username}/sync_message_images/`);
+
     return new Promise((resolve, reject) => {
 
-        make_dir(`/Users/${os_username}/sync_message_images/`)
+        //make_dir(`/Users/${os_username}/sync_message_images/`)
 
         fs.writeFile(`/Users/${os_username}/sync_message_images/`+name, data, function (err) {
             if (err) {
@@ -294,7 +296,7 @@ const writeAllDatabaseFiles = async() => {
 
 const fixStickerMessage = async(currentPath, currentFilename) => { 
 
-    make_dir(`/Users/${os_username}/sync_message_images/`)
+    await make_dir(`/Users/${os_username}/sync_message_images/`)
 
     if (skipStickerList.includes(currentFilename)) {
 
@@ -335,7 +337,7 @@ const fixStickerMessage = async(currentPath, currentFilename) => {
 
 function downloadFile(uri, filename, callback) {
 
-    make_dir(`/Users/${os_username}/sync_message_images/`);
+    make_dir_sync(`/Users/${os_username}/sync_message_images/`);
 
 
     request.head(uri, function(err, res, body){
@@ -345,12 +347,26 @@ function downloadFile(uri, filename, callback) {
     
 }
 
-function make_dir(path) {
+function make_dir_sync (path) {
 
     fs.mkdir(path, { recursive: true }, (err) => {
     if (err) throw err;
     });
   }
 
+const make_dir = async(path) => {
+
+    return new Promise((resolve, reject) => {
+
+        fs.mkdir(path, { recursive: true }, (err) => {
+            if (err) {
+                reject();
+            } else {
+                resolve();
+            }
+            });
+
+    })
+}
 
 module.exports = {sleep, limitMessages, readFile, dateConverter, fixiMessageMessage, getPictureSizes, downloadFile, writeFile, fixStickerMessage,writeAllDatabaseFiles};

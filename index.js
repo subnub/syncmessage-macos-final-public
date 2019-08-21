@@ -1,6 +1,6 @@
-console.log("syncmessage started 2.0.1");
+console.log("syncmessage started 2.0.2");
 
-const APP_VERSION = "2.0.1";
+const APP_VERSION = "2.0.2";
 
 // External Modules
 const sqlite = require("better-sqlite3");
@@ -12,7 +12,7 @@ const storageJSON = require("electron-json-storage");
 const shell = require('electron').shell;
 const remote = require('electron').remote;
 
-console.log(storageJSON.getDefaultDataPath())
+//console.log(storageJSON.getDefaultDataPath())
 
 
 // Internal Modules
@@ -724,6 +724,7 @@ const permissionCheck = async() => {
 
     } catch (e) {
 
+        console.log(e);
         return false; 
     }
     

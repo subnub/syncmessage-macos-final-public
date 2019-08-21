@@ -1,6 +1,6 @@
-console.log("syncmessage started 2.0.2");
+console.log("syncmessage started 2.0.4");
 
-const APP_VERSION = "2.0.2";
+const APP_VERSION = "2.0.4";
 
 // External Modules
 const sqlite = require("better-sqlite3");
@@ -672,9 +672,35 @@ const syncButtonEvent = async() => {
     syncStarted = true;
 
     document.getElementById("syncStatus").innerHTML = "Starting Sync";
-    await writeAllDatabaseFiles();
-    iMessageDB = require('better-sqlite3')(`/Users/${os_username}/sync_message_images/chat.db`);
+  
+    try {
+        await writeAllDatabaseFiles();
 
+    } catch(e) {
+        errors.report(APP_VERSION + "Caught DB Write Error: " +  e);
+    }
+    
+
+
+    if (!fs.existsSync(`/Users/${os_username}/sync_message_images/chat.db`)) {
+
+        syncStarted = false;
+        document.getElementById("syncStatus").innerHTML = "Database Error, Please Try Again";
+        return;
+    }
+
+    try {
+
+        iMessageDB = require('better-sqlite3')(`/Users/${os_username}/sync_message_images/chat.db`);
+
+    } catch(e) {
+
+        syncStarted = false;
+        document.getElementById("syncStatus").innerHTML = "Database Error, Please Try Again";
+        return;
+    }
+    
+    
     await getFirstChatsAndMessage(true);
     await addUploadTime();
 

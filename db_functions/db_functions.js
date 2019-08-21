@@ -130,10 +130,29 @@ const getChats = (iMessageDB) => {
 
 const getLastRecordProperties = (iMessageDB) => {
 
-    const propDB = iMessageDB.prepare("SELECT * FROM _SqliteDatabaseProperties");
-    const readPropDB = propDB.all();
+    try {
 
-    return readPropDB[readPropDB.length - 1]["value"];
+        const propDB = iMessageDB.prepare("SELECT * FROM _SqliteDatabaseProperties");
+        const readPropDB = propDB.all();
+        
+        if (readPropDB.length === 0) {
+
+            return 0;
+        }
+
+        if (readPropDB[readPropDB.length - 1]["key"].includes("Record")) {
+
+            return readPropDB[readPropDB.length - 1]["value"]
+        }
+
+        return 0;
+
+    } catch (e) {
+
+        return 0;
+    }
+
+    
 }
 
 const getLastMessageByChatROWID = (ROWID) => {

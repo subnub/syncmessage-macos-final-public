@@ -1,6 +1,6 @@
-console.log("syncmessage started 2.0.4");
+console.log("syncmessage started 2.0.5");
 
-const APP_VERSION = "2.0.4";
+const APP_VERSION = "2.0.5";
 
 // External Modules
 const sqlite = require("better-sqlite3");

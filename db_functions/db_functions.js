@@ -225,27 +225,35 @@ const getPicturePathAndName = (ROWID, iMessageDB) => {
 
         readAttachmentDB.forEach((attachment) => {
 
-            const filenameBeforeSplit = readAttachmentDB[0].filename;
-            let fileNameSplit = filenameBeforeSplit.split("/");
-            fileNameSplit = fileNameSplit[fileNameSplit.length - 1];
-
-            const filenameRemovedTilday = filenameBeforeSplit.replace("~", "");
-            
-            let filenameAddRowID = fileNameSplit;
-
             try {
-                filenameAddRowID = fileNameSplit.split(".")[0] + ROWID + "." +fileNameSplit.split(".")[1];
-            } catch(e) {
 
-                filenameAddRowID = fileNameSplit;
+                const filenameBeforeSplit = readAttachmentDB[0].filename;
+                let fileNameSplit = filenameBeforeSplit.split("/");
+                fileNameSplit = fileNameSplit[fileNameSplit.length - 1];
+    
+                const filenameRemovedTilday = filenameBeforeSplit.replace("~", "");
+                
+                let filenameAddRowID = fileNameSplit;
+    
+                try {
+                    filenameAddRowID = fileNameSplit.split(".")[0] + ROWID + "." +fileNameSplit.split(".")[1];
+                } catch(e) {
+    
+                    filenameAddRowID = fileNameSplit;
+                }
+                 
+                const filename = filenameAddRowID;
+    
+                const filePath = "/Users/" + os_username + filenameRemovedTilday;
+    
+                totalFilePaths.push(filePath);
+                totalFilenames.push(filename);
+
+            } catch (e) {
+
+                console.log("attachment_err", e);
+
             }
-             
-            const filename = filenameAddRowID;
-
-            const filePath = "/Users/" + os_username + filenameRemovedTilday;
-
-            totalFilePaths.push(filePath);
-            totalFilenames.push(filename);
 
         })
 

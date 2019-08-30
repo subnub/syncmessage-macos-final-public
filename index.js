@@ -1,6 +1,6 @@
-console.log("syncmessage started 2.0.5");
+console.log("syncmessage started 2.0.6");
 
-const APP_VERSION = "2.0.5";
+const APP_VERSION = "2.0.6";
 
 // External Modules
 const sqlite = require("better-sqlite3");
@@ -675,9 +675,12 @@ const syncButtonEvent = async() => {
   
     try {
         await writeAllDatabaseFiles();
-
+        
     } catch(e) {
         errors.report(APP_VERSION + "Caught DB Write Error: " +  e);
+        syncStarted = false;
+        document.getElementById("syncStatus").innerHTML = "Database Error, Please Try Again";
+        return;
     }
     
 

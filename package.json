@@ -38,7 +38,7 @@
     "env-cmd": "^9.0.3",
     "exif-parser": "^0.1.12",
     "exif-reader": "^1.0.2",
-    "exifreader": "^2.8.2",
+    "exifreader": "^4.6.0",
     "get-exif": "^1.0.3",
     "image-size": "^0.7.4",
     "node-watch": "^0.6.3",
